@@ -1,4 +1,15 @@
 # v4-template
+
+## Deploy hook
+```shell
+$ forge script script/Deploy_BlackLIstHook.s.sol:Deploy_BlackLIstHookScript   --account three --sender 0x97ba7778dD9CE27bD4953c136F3B3b7b087E14c1 --rpc-url arbitrum --verify  --etherscan-api-key $ARBISCAN_TOKEN --broadcast
+
+$ # for verify  just deployed
+$ forge script script/Deploy_BlackLIstHook.s.sol:Deploy_BlackLIstHookScript   --account three --sender 0x97ba7778dD9CE27bD4953c136F3B3b7b087E14c1 --rpc-url arbitrum --verify  --etherscan-api-key $ARBISCAN_TOKEN --resume
+
+$ forge verify-contract   ./src/BlackListHook.sol:BlackListHook  --verifier-api-key $ARBISCAN_TOKEN --num-of-optimizations 200 --compiler-version 0.8.26
+```
+
 ### **A template for writing Uniswap v4 Hooks 🦄**
 
 [`Use this Template`](https://github.com/uniswapfoundation/v4-template/generate)

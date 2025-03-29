@@ -68,7 +68,7 @@ contract BlackListHookTest is Test, Fixtures {
                 Hooks.BEFORE_SWAP_FLAG 
             ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
         );
-        bytes memory constructorArgs = abi.encode(manager, swapRouterWithSender); //Add all the necessary constructor arguments from the hook
+        bytes memory constructorArgs = abi.encode(manager, swapRouterWithSender, address(this)); //Add all the necessary constructor arguments from the hook
         deployCodeTo("BlackListHook.sol:BlackListHook", constructorArgs, flags);
         hook = BlackListHook(flags);
 

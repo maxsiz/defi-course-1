@@ -25,8 +25,12 @@ contract BlackListHook is BaseHook, BlackListControl {
     error UnexpectedRouter(address sender);
     constructor(
         IPoolManager _poolManager,
-        address _trustedRouter
-    ) BaseHook(_poolManager) {
+        address _trustedRouter,
+        address _poolOwner
+    ) 
+       BaseHook(_poolManager) 
+       BlackListControl(_poolOwner)
+    {
         trustedRouter = _trustedRouter;
     }
 

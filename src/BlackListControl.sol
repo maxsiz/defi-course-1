@@ -14,8 +14,8 @@ contract BlackListControl {
     mapping(PoolId => mapping(address => bool)) public blackList;
     error SenderBlackListed(address sender);
 
-    constructor () {
-    	poolOwner = msg.sender;
+    constructor (address _poolOwner) {
+    	poolOwner = _poolOwner;
     }
 
     function setBlackListStatusForAddress(PoolId _pool, address _sender, bool _status) external {
