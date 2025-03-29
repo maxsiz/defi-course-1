@@ -19,6 +19,10 @@ import {IPositionManager} from "v4-periphery/src/interfaces/IPositionManager.sol
 import {EasyPosm} from "./utils/EasyPosm.sol";
 import {Fixtures} from "./utils/Fixtures.sol";
 
+// Transform test, step 0
+import {PoolSwapTestWithSender} from "./utils/PoolSwapTestWithSender.sol";
+import {IERC20Minimal} from "v4-core/src/interfaces/external/IERC20Minimal.sol";
+
 contract BlackListHookTest is Test, Fixtures {
     using EasyPosm for IPositionManager;
     using PoolIdLibrary for PoolKey;
@@ -27,6 +31,9 @@ contract BlackListHookTest is Test, Fixtures {
 
     BlackListHook hook;
     PoolId poolId;
+
+    // Transform test, step 1
+    PoolSwapTestWithSender swapRouterWithSender;
 
     uint256 tokenId;
     int24 tickLower;
@@ -39,13 +46,29 @@ contract BlackListHookTest is Test, Fixtures {
 
         deployAndApprovePosm(manager);
 
+        // Transform test, step 2
+        //////////////////////////////////////////////// 
+        ///// Deploy new router  for test with msgSender
+        //////////////////////////////////////////////// 
+        swapRouterWithSender = new PoolSwapTestWithSender(manager);
+        IERC20Minimal(Currency.unwrap(currency0)).approve(
+            address(swapRouterWithSender), 
+            type(uint256).max
+        );
+
+        IERC20Minimal(Currency.unwrap(currency1)).approve(
+            address(swapRouterWithSender), 
+            type(uint256).max
+        );
+        ////////////////////////////////////////////////////////
+
         // Deploy the hook to an address with the correct flags
         address flags = address(
             uint160(
                 Hooks.BEFORE_SWAP_FLAG 
             ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
         );
-        bytes memory constructorArgs = abi.encode(manager); //Add all the necessary constructor arguments from the hook
+        bytes memory constructorArgs = abi.encode(manager, swapRouterWithSender); //Add all the necessary constructor arguments from the hook
         deployCodeTo("BlackListHook.sol:BlackListHook", constructorArgs, flags);
         hook = BlackListHook(flags);
 
@@ -86,11 +109,9 @@ contract BlackListHookTest is Test, Fixtures {
         // Perform a test swap //
         bool zeroForOne = true;
         int256 amountSpecified = -1e18; // negative number indicates exact input swap!
-        BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, abi.encode(address(this)));
+        BalanceDelta swapDelta = swap2(key, zeroForOne, amountSpecified, abi.encode(address(this)));
         // ------------------- //
-
         assertEq(int256(swapDelta.amount0()), amountSpecified);
-
     }
 
     function testBlackListHook_swapFail() public {
@@ -101,9 +122,33 @@ contract BlackListHookTest is Test, Fixtures {
         int256 amountSpecified = -1e18; // negative number indicates exact input swap!
         hook.setBlackListStatusForAddress(poolId, address(this), true);
         vm.expectRevert();
-        BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, abi.encode(address(this)));
+        BalanceDelta swapDelta = swap2(key, zeroForOne, amountSpecified, abi.encode(address(this)));
         // ------------------- //
 
+    }
+
+    // Transform test, step 4
+    /// @notice Helper function for a simple ERC20 swaps that allows for unlimited price impact
+    function swap2(PoolKey memory _key, bool zeroForOne, int256 amountSpecified, bytes memory hookData)
+        internal
+        returns (BalanceDelta)
+    {
+        // allow native input for exact-input, guide users to the `swapNativeInput` function
+        bool isNativeInput = zeroForOne && _key.currency0.isAddressZero();
+        if (isNativeInput) require(0 > amountSpecified, "Use swapNativeInput() for native-token exact-output swaps");
+
+        uint256 value = isNativeInput ? uint256(-amountSpecified) : 0;
+
+        return swapRouterWithSender.swap{value: value}(
+            _key,
+            IPoolManager.SwapParams({
+                zeroForOne: zeroForOne,
+                amountSpecified: amountSpecified,
+                sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT
+            }),
+            PoolSwapTestWithSender.TestSettings({takeClaims: false, settleUsingBurn: false}),
+            hookData
+        );
     }
 
 }

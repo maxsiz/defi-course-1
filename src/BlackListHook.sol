@@ -11,15 +11,24 @@ import {BalanceDelta} from "v4-core/src/types/BalanceDelta.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "v4-core/src/types/BeforeSwapDelta.sol";
 import {BlackListControl} from "./BlackListControl.sol";
 
+interface IMsgSender {
+    function msgSender() external view returns (address);
+}
+
 contract BlackListHook is BaseHook, BlackListControl {
     using PoolIdLibrary for PoolKey;
-
+    address immutable public trustedRouter;
     // NOTE: ---------------------------------------------------------
     // state variables should typically be unique to a pool
     // a single hook contract should be able to service multiple pools
     // ---------------------------------------------------------------
-
-    constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
+    error UnexpectedRouter(address sender);
+    constructor(
+        IPoolManager _poolManager,
+        address _trustedRouter
+    ) BaseHook(_poolManager) {
+        trustedRouter = _trustedRouter;
+    }
 
     function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
         return Hooks.Permissions({
@@ -44,14 +53,17 @@ contract BlackListHook is BaseHook, BlackListControl {
     // NOTE: see IHooks.sol for function documentation
     // -----------------------------------------------
 
-    function _beforeSwap(address, PoolKey calldata key, IPoolManager.SwapParams calldata, bytes calldata hookParams)
+    function _beforeSwap(address _sender, PoolKey calldata key, IPoolManager.SwapParams calldata, bytes calldata)
         internal
         override
         returns (bytes4, BeforeSwapDelta, uint24)
     {
-        //beforeSwapCount[key.toId()]++;
-        address txSender = abi.decode(hookParams, (address)); 
+        if (_sender == trustedRouter) {
+            address txSender = IMsgSender(_sender).msgSender();
         _checkBlackListed(key.toId(), txSender);
+        } else {
+            revert UnexpectedRouter(_sender);
+        }
         return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
     }
 
