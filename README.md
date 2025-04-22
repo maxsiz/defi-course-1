@@ -1,79 +1,29 @@
-# v4-template
+# v4-template & Contract for Defi Course  
+In this README.md you can find all the sources mentioned in the course:  
+
+1. [Foundry](https://book.getfoundry.sh/) is a smart contract development toolchain.
+2. [Uniswap Foundation Template](https://github.com/uniswapfoundation/v4-template/generate) that was used.
+3. Source code:
+    - contract is in the `./src/BlackListHook.sol`; 
+    - contract's tests are in the  `./test/BlackListHook.t.sol`; 
+    - deployment script is in the `./script/Deploy_BlackLIstHookScript.s.sol` folder.
+4. Deployed contract https://arbiscan.io/address/0xdb7644dc0b963b0ef1ff732f028e8adb9f310080
+5. [First video presentation](./Uniswap_Overview.pdf)
 
 ## Deploy hook
 ```shell
-$ forge script script/Deploy_BlackLIstHook.s.sol:Deploy_BlackLIstHookScript   --account three --sender 0x97ba7778dD9CE27bD4953c136F3B3b7b087E14c1 --rpc-url arbitrum --verify  --etherscan-api-key $ARBISCAN_TOKEN --broadcast
+$ # Prepare Environment Variables (Linux)
+$ source .env
+$
+$ # Run deployment script for Arbitrum chain
+$ forge script ./script/Deploy_BlackLIstHookScript.s.sol:Deploy_BlackLIstHookScript --account three --sender 0x97ba7778dD9CE27bD4953c136F3B3b7b087E14c1 --rpc-url arbitrum --verify  --etherscan-api-key $ARBISCAN_TOKEN --broadcast
 
-$ # for verify  just deployed
-$ forge script script/Deploy_BlackLIstHook.s.sol:Deploy_BlackLIstHookScript   --account three --sender 0x97ba7778dD9CE27bD4953c136F3B3b7b087E14c1 --rpc-url arbitrum --verify  --etherscan-api-key $ARBISCAN_TOKEN --resume
-
-$ forge verify-contract   ./src/BlackListHook.sol:BlackListHook  --verifier-api-key $ARBISCAN_TOKEN --num-of-optimizations 200 --compiler-version 0.8.26
+$ # For verify  just deployed
+$ forge script ./script/Deploy_BlackLIstHookScript.s.sol:Deploy_BlackLIstHookScript   --account three --sender 0x97ba7778dD9CE27bD4953c136F3B3b7b087E14c1 --rpc-url arbitrum --verify  --etherscan-api-key $ARBISCAN_TOKEN --resume
 ```
-
-### **A template for writing Uniswap v4 Hooks 🦄**
-
-[`Use this Template`](https://github.com/uniswapfoundation/v4-template/generate)
-
-1. The example hook [Counter.sol](src/Counter.sol) demonstrates the `beforeSwap()` and `afterSwap()` hooks
-2. The test template [Counter.t.sol](test/Counter.t.sol) preconfigures the v4 pool manager, test tokens, and test liquidity.
-
-<details>
-<summary>Updating to v4-template:latest</summary>
-
-This template is actively maintained -- you can update the v4 dependencies, scripts, and helpers: 
-```bash
-git remote add template https://github.com/uniswapfoundation/v4-template
-git fetch template
-git merge template/main <BRANCH> --allow-unrelated-histories
-```
-
-</details>
-
 ---
-
-### Check Forge Installation
-*Ensure that you have correctly installed Foundry (Forge) Stable. You can update Foundry by running:*
-
-```
-foundryup
-```
-
-> *v4-template* appears to be _incompatible_ with Foundry Nightly. See [foundry announcements](https://book.getfoundry.sh/announcements) to revert back to the stable build
-
-
-
-## Set up
-
-*requires [foundry](https://book.getfoundry.sh)*
-
-```
-forge install
-forge test
-```
-
-### Local Development (Anvil)
-
-Other than writing unit tests (recommended!), you can only deploy & test hooks on [anvil](https://book.getfoundry.sh/anvil/)
-
-```bash
-# start anvil, a local EVM chain
-anvil
-
-# in a new terminal
-forge script script/Anvil.s.sol \
-    --rpc-url http://localhost:8545 \
-    --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
-    --broadcast
-```
-
-See [script/](script/) for hook deployment, pool creation, liquidity provision, and swapping.
-
----
-
-<details>
 <summary><h2>Troubleshooting</h2></summary>
-
-
+<details>
 
 ### *Permission Denied*
 
@@ -99,13 +49,10 @@ Hook deployment failures are caused by incorrect flags or incorrect salt mining
 
 ---
 
-Additional resources:
-
-[Uniswap v4 docs](https://docs.uniswap.org/contracts/v4/overview)
-
-[v4-periphery](https://github.com/uniswap/v4-periphery) contains advanced hook implementations that serve as a great reference
-
-[v4-core](https://github.com/uniswap/v4-core)
-
-[v4-by-example](https://v4-by-example.org)
+## Additional resources:
+[Uniswap v4 docs](https://docs.uniswap.org/contracts/v4/overview)  
+[v4-periphery](https://github.com/uniswap/v4-periphery) contains advanced hook implementations that serve as a great reference  
+[v4-core](https://github.com/uniswap/v4-core)  
+[v4-by-example](https://v4-by-example.org)  
+[About hooks](https://github.com/ora-io/awesome-uniswap-hooks)
 
